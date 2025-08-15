@@ -4,3 +4,4 @@ requests
 hedera-sdk-python
 ed25519
 cryptography
+bip32utils

@@ -28,4 +28,3 @@ services:
       DB_USER: hedera
       DB_PASSWORD: recovery
       DB_NAME: hedera_recovery
-    restart: unless-stopped
