@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: hedera
+      POSTGRES_PASSWORD: recovery
+      POSTGRES_DB: hedera_recovery
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hedera -d hedera_recovery"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  app:
+    build: ./app
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data/wordlist.txt:/app/wordlist.txt
+      - ./data/test_mnemonic.txt:/app/test_mnemonic.txt
+    environment:
+      DB_HOST: db
+      DB_USER: hedera
+      DB_PASSWORD: recovery
+      DB_NAME: hedera_recovery
+    restart: unless-stopped

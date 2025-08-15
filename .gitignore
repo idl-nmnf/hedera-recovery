@@ -1,0 +1,22 @@
+# Hedera Recovery Tool - Git Ignore
+# Sensitive files
+data/test_mnemonic.txt
+data/db/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Docker
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

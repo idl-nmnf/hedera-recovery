@@ -1,0 +1,6 @@
+psycopg2-binary
+mnemonic
+requests
+hedera-sdk-python
+ed25519
+cryptography
