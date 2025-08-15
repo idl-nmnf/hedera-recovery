@@ -29,3 +29,11 @@ services:
       DB_USER: hedera
       DB_PASSWORD: recovery
       DB_NAME: hedera_recovery
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
