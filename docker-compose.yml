@@ -23,6 +23,7 @@ services:
     volumes:
       - ./data/wordlist.txt:/app/wordlist.txt
       - ./data/test_mnemonic.txt:/app/test_mnemonic.txt
+      - ./data/test_expected_key.txt:/app/test_expected_key.txt
     environment:
       DB_HOST: db
       DB_USER: hedera

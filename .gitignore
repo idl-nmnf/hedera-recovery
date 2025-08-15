@@ -1,6 +1,7 @@
 # Hedera Recovery Tool - Git Ignore
 # Sensitive files
 data/test_mnemonic.txt
+data/test_expected_key.txt
 data/db/
 *.log
 

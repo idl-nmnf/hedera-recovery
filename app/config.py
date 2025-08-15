@@ -11,6 +11,8 @@ DB_NAME = os.getenv('DB_NAME', 'hedera_recovery')
 # File paths
 WORDLIST_PATH = 'wordlist.txt'
 TEST_MNEMONIC_PATH = 'test_mnemonic.txt'
+TEST_EXPECTED_KEY_PATH = 'test_expected_key.txt'
+EXPECTED_KEY_PATH = 'expected_key.txt'
 
 # Performance settings
 DEFAULT_BATCH_SIZE = 500

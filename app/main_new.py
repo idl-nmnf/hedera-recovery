@@ -8,7 +8,7 @@ and comprehensive derivation method testing.
 import sys
 import os
 from recovery import RecoveryEngine
-from config import WORDLIST_PATH, TEST_MNEMONIC_PATH, TEST_EXPECTED_KEY_PATH
+from config import WORDLIST_PATH, TEST_MNEMONIC_PATH
 
 
 def read_wordlist():
@@ -37,18 +37,6 @@ def read_test_mnemonic():
         return None
 
 
-def read_expected_key():
-    """Read expected key for testing."""
-    try:
-        with open(TEST_EXPECTED_KEY_PATH, 'r') as f:
-            return f.read().strip()
-    except FileNotFoundError:
-        return None
-    except Exception as e:
-        print(f"Error reading expected key: {e}")
-        return None
-
-
 def main():
     """Main application entry point."""
     # Initialize recovery engine
@@ -66,12 +54,8 @@ def main():
             print("Create this file with a known 24-word mnemonic for validation.")
             sys.exit(1)
         
-        # Read expected key from file
-        expected_key = read_expected_key()
-        if not expected_key:
-            print(f"Error: {TEST_EXPECTED_KEY_PATH} not found for testing.")
-            print("Create this file with the expected private key for validation.")
-            sys.exit(1)
+        # Expected key can be specified for validation
+        expected_key = "c520ff29363ad4a6fae6acc892f16eba6333dbef2c74f16b78a0e9ec10b60fb9"  # HashPack test key
         
         success = engine.test_known_wallet(test_mnemonic, expected_key)
         if not success:
