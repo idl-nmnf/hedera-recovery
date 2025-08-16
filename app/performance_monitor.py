@@ -54,16 +54,52 @@ class PerformanceMonitor:
     def _init_gpu_monitoring(self):
         """Initialize GPU monitoring if available."""
         try:
+            # Try NVIDIA monitoring first
             import pynvml
             pynvml.nvmlInit()
             self.gpu_available = True
+            self.gpu_type = "NVIDIA"
             logger.info("✅ GPU monitoring enabled (NVIDIA)")
         except ImportError:
+            logger.info("⚠️ pynvml not available for NVIDIA GPU monitoring")
+            self.gpu_available = False
+        except Exception as nvidia_error:
             try:
-                # Alternative: Check for AMD GPU monitoring
-                pass
-            except:
-                logger.info("⚠️ GPU monitoring not available")
+                # Try AMD/OpenCL monitoring as fallback
+                import pyopencl as cl
+                platforms = cl.get_platforms()
+                gpu_devices = []
+                for platform in platforms:
+                    devices = platform.get_devices(device_type=cl.device_type.GPU)
+                    gpu_devices.extend(devices)
+                
+                if gpu_devices:
+                    self.gpu_available = True
+                    self.gpu_type = "AMD/OpenCL"
+                    logger.info(f"✅ AMD/OpenCL GPU monitoring enabled: {len(gpu_devices)} GPU(s)")
+                else:
+                    self.gpu_available = False
+                    logger.info("ℹ️ No OpenCL GPU devices found")
+                    
+            except Exception as amd_error:
+                self.gpu_available = False
+                logger.info(f"⚠️ GPU monitoring unavailable - NVIDIA: {nvidia_error}, AMD/OpenCL: {amd_error}")
+                logger.info("ℹ️ Continuing with CPU-only monitoring")
+    
+    def get_system_info(self):
+        """Get system information summary."""
+        try:
+            import platform
+            cpu_count = psutil.cpu_count()
+            memory = psutil.virtual_memory()
+            memory_gb = memory.total / (1024**3)
+            
+            return (f"{platform.system()} {platform.release()}, "
+                   f"{cpu_count} CPU cores, "
+                   f"{memory_gb:.1f}GB RAM, "
+                   f"GPU: {'Available' if self.gpu_available else 'Unavailable'}")
+        except Exception as e:
+            return f"System info unavailable: {e}"
     
     def start_monitoring(self):
         """Start performance monitoring in background thread."""
@@ -84,6 +120,34 @@ class PerformanceMonitor:
             if self.monitor_thread:
                 self.monitor_thread.join(timeout=5)
             logger.info("🔍 Performance monitoring stopped")
+    
+    def get_metrics(self):
+        """Get current performance metrics summary."""
+        if not self.metrics_history:
+            return {
+                'runtime_hours': 0,
+                'cpu_percent': 0,
+                'memory_percent': 0,
+                'memory_gb_used': 0,
+                'combinations_per_second': 0,
+                'total_combinations': self.combinations_tested,
+                'gpu_utilization': 0
+            }
+        
+        latest = self.metrics_history[-1]
+        # Calculate runtime from start time
+        runtime_seconds = time.time() - self.start_time
+        runtime_hours = runtime_seconds / 3600
+        
+        return {
+            'runtime_hours': runtime_hours,
+            'cpu_percent': latest.cpu_percent,
+            'memory_percent': latest.memory_percent,
+            'memory_gb_used': latest.memory_gb_used,
+            'combinations_per_second': latest.combinations_per_second,
+            'total_combinations': self.combinations_tested,
+            'gpu_utilization': latest.gpu_utilization
+        }
     
     def _monitoring_loop(self):
         """Main monitoring loop."""
@@ -221,5 +285,5 @@ class PerformanceMonitor:
             (f"🎮 GPU: {metrics['gpu_utilization']:.1f}%\n" if metrics['gpu_utilization'] > 0 else "")
         )
 
-# Global performance monitor instance
-performance_monitor = PerformanceMonitor()
+# Performance monitor class ready for instantiation
+# Create instance in main.py when needed: performance_monitor = PerformanceMonitor()

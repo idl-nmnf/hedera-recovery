@@ -11,9 +11,17 @@ def load_system_specs():
     """Load system specifications from TOML file."""
     try:
         import toml
-        specs_file = Path(__file__).parent.parent / "system_specs.toml"
+        # Try to load from app directory first, then parent directory
+        specs_file = Path(__file__).parent / "system_specs.toml"
+        if not specs_file.exists():
+            specs_file = Path(__file__).parent.parent / "system_specs.toml"
+        
         if specs_file.exists():
-            return toml.load(specs_file)
+            specs = toml.load(specs_file)
+            print(f"✅ System specs loaded from: {specs_file}")
+            return specs
+        else:
+            print("⚠️ system_specs.toml not found - using defaults")
     except ImportError:
         print("⚠️ TOML library not available - using default configuration")
     except Exception as e:

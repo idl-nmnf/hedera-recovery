@@ -73,12 +73,21 @@ def main():
             print("🎯 Initializing GPU acceleration...")
             try:
                 gpu_accelerator = GPUAccelerator()
-                print(f"✅ GPU acceleration enabled: {gpu_accelerator.get_device_info()}")
+                device_info = gpu_accelerator.get_device_info()
+                if device_info.get('available', False):
+                    print(f"✅ GPU acceleration enabled: {device_info}")
+                else:
+                    print(f"⚠️ GPU detected but not available for acceleration: {device_info}")
+                    print("ℹ️ This is normal in Docker without GPU drivers")
             except Exception as e:
                 print(f"⚠️ GPU acceleration failed to initialize: {e}")
+                print("ℹ️ Continuing with CPU-only processing")
+        else:
+            print("ℹ️ GPU acceleration disabled in configuration")
         
         # Display system capabilities
         print(f"💻 System: {performance_monitor.get_system_info()}")
+        print("🚀 High-performance recovery system ready!")
     
     # Initialize recovery engine
     engine = RecoveryEngine()
