@@ -69,15 +69,15 @@ WORDLIST_PATH = 'wordlist.txt'
 TEST_MNEMONIC_PATH = 'test_mnemonic.txt'
 TEST_EXPECTED_KEY_PATH = 'test_expected_key.txt'
 
-# Performance settings - Optimized for your powerful hardware
-DEFAULT_BATCH_SIZE = min(5000, MEMORY_GB * 150)           # 4800 for 32GB system
-DEFAULT_CACHE_SIZE = min(2000000, MEMORY_GB * 50000)      # 1.6M for 32GB system  
-MAX_WORKERS = min(CPU_THREADS - 1, 11)                    # 11 workers (leave 1 for system)
+# Performance settings
+DEFAULT_BATCH_SIZE = 15000                                 # Massive batches
+DEFAULT_CACHE_SIZE = 5000000                               # 5M pattern cache
+MAX_WORKERS = 20                                           # Aggressive threading
 
 # Memory optimization settings
-MEMORY_CACHE_SIZE = MEMORY_GB * 64 * 1024 * 1024          # 2GB cache for 32GB system
-DISK_CACHE_SIZE = 20 * 1024 * 1024 * 1024                 # 20GB NVMe SSD cache
-PREFETCH_BUFFER_SIZE = 10000                               # Prefetch 10K patterns
+MEMORY_CACHE_SIZE = 8 * 1024 * 1024 * 1024                # 8GB RAM cache
+DISK_CACHE_SIZE = 50 * 1024 * 1024 * 1024                 # 50GB SSD cache
+PREFETCH_BUFFER_SIZE = 50000                               # 50K pattern prefetch
 
 # GPU acceleration settings
 ENABLE_GPU_ACCELERATION = HAS_GPU
@@ -90,24 +90,24 @@ ASYNC_API_CALLS = True                                     # Async Hedera API ca
 ENABLE_PATTERN_CACHING = True                              # Cache generated patterns
 ENABLE_RESULT_BATCHING = True                              # Batch database operations
 
-# Recovery settings - Optimized for high throughput
+# Recovery settings - MAXIMUM THROUGHPUT MODE
 MNEMONIC_LENGTH = 24
-PROGRESS_LOG_INTERVAL = 10000                              # Log every 10K combinations
-BATCH_LOG_INTERVAL = 5000                                  # Batch processing logs
-MEMORY_CLEANUP_INTERVAL = 50000                            # Cleanup every 50K combinations
-DATABASE_BATCH_COMMIT = 2000                               # Batch commit size
+PROGRESS_LOG_INTERVAL = 25000                              # Log every 25K combinations (reduce logging overhead)
+BATCH_LOG_INTERVAL = 15000                                 # Larger batch processing logs
+MEMORY_CLEANUP_INTERVAL = 100000                           # Less frequent cleanup (higher memory usage)
+DATABASE_BATCH_COMMIT = 5000                               # Larger batch commits (more throughput)
 
-# Hedera API settings - Optimized for high-performance access
+# Hedera API settings - AGGRESSIVE API ACCESS
 HEDERA_MAINNET_URL = "https://mainnet-public.mirrornode.hedera.com/api/v1"
-API_TIMEOUT = 25                                           # Increased timeout for stability
-MAX_CONCURRENT_API_CALLS = 20                              # More concurrent requests
-API_RETRY_ATTEMPTS = 5                                     # More retries
-API_RETRY_DELAY = 2                                        # Longer retry delay
-API_RATE_LIMIT = 100                                       # Requests per second limit
+API_TIMEOUT = 15                                           # Faster timeout for speed
+MAX_CONCURRENT_API_CALLS = 50                              # MASSIVE concurrent requests
+API_RETRY_ATTEMPTS = 3                                     # Fewer retries for speed
+API_RETRY_DELAY = 1                                        # Shorter retry delay
+API_RATE_LIMIT = 200                                       # Double the request rate
 
-# System monitoring
+# System monitoring - Reduced monitoring overhead
 ENABLE_PERFORMANCE_MONITORING = True
-PERFORMANCE_LOG_INTERVAL = 30                              # Log performance every 30 seconds
+PERFORMANCE_LOG_INTERVAL = 60                              # Less frequent monitoring (reduce overhead)
 CPU_USAGE_THRESHOLD = 95                                   # Alert if CPU > 95%
 MEMORY_USAGE_THRESHOLD = 85                                # Alert if memory > 85%
 

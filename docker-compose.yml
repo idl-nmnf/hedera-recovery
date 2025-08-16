@@ -36,8 +36,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '11.0'
-          memory: 24G
+          cpus: '12.0'      # USE ALL 12 CPU cores (100% utilization)
+          memory: 30G       # Nearly max RAM usage (30GB/32GB = 94%)
         reservations:
-          cpus: '8.0'
-          memory: 16G
+          cpus: '10.0'      # Reserve 10 cores minimum
+          memory: 20G       # Reserve 20GB minimum
