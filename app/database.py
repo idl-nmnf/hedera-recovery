@@ -150,3 +150,45 @@ class Database:
         except Exception as e:
             logging.error(f"Error getting stats: {e}")
             return {'total_tested': 0, 'wallets_found': 0, 'total_balance': 0}
+    
+    def reset_database(self):
+        """Reset database - remove all existing data for fresh start."""
+        try:
+            conn = self.get_connection()
+            cur = conn.cursor()
+            
+            # Drop and recreate table for complete reset
+            cur.execute('DROP TABLE IF EXISTS combinations CASCADE')
+            
+            # Recreate with optimized schema
+            cur.execute('''
+                CREATE TABLE combinations (
+                    id SERIAL PRIMARY KEY,
+                    mnemonic TEXT UNIQUE NOT NULL,
+                    checked BOOLEAN DEFAULT FALSE,
+                    balance BIGINT DEFAULT 0,
+                    method_used TEXT,
+                    accounts TEXT[],
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Create optimized indexes
+            cur.execute('CREATE INDEX idx_combinations_mnemonic ON combinations(mnemonic)')
+            cur.execute('CREATE INDEX idx_combinations_checked ON combinations(checked) WHERE checked = TRUE')
+            cur.execute('CREATE INDEX idx_combinations_balance ON combinations(balance) WHERE balance > 0')
+            cur.execute('CREATE INDEX idx_combinations_method ON combinations(method_used) WHERE method_used IS NOT NULL')
+            cur.execute('CREATE INDEX idx_combinations_created_at ON combinations(created_at)')
+            
+            conn.commit()
+            cur.close()
+            conn.close()
+            
+            logging.info("✅ Database reset successfully - fresh start!")
+            print("✅ Database reset successfully - fresh start!")
+            return True
+            
+        except Exception as e:
+            logging.error(f"❌ Error resetting database: {e}")
+            print(f"❌ Error resetting database: {e}")
+            return False

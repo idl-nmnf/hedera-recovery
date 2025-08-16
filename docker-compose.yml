@@ -24,16 +24,21 @@ services:
       - ./data/wordlist.txt:/app/wordlist.txt
       - ./data/test_mnemonic.txt:/app/test_mnemonic.txt
       - ./data/test_expected_key.txt:/app/test_expected_key.txt
+      # GPU device access for OpenCL
+      - /dev/dri:/dev/dri
     environment:
       DB_HOST: db
       DB_USER: hedera
       DB_PASSWORD: recovery
       DB_NAME: hedera_recovery
+      # Enable GPU acceleration
+      PYOPENCL_CTX: '0'
+    privileged: true  # Required for GPU access
     deploy:
       resources:
         limits:
-          cpus: '4.0'
-          memory: 2G
+          cpus: '11.0'
+          memory: 24G
         reservations:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '8.0'
+          memory: 16G
