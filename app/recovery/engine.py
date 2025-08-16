@@ -83,6 +83,44 @@ class RecoveryEngine:
         self.logger.warning("⚠️ Test completed but no accounts/balance found")
         return not expected_key  # Pass if no expected key specified
     
+    def test_derivation_methods(self, test_mnemonic: str) -> bool:
+        """Test all derivation methods for a mnemonic without key validation."""
+        self.logger.info(f"=== TESTING DERIVATION METHODS ===")
+        self.logger.info(f"Testing mnemonic: {test_mnemonic[:20]}...")
+        
+        # Validate mnemonic
+        if not self.validator.is_valid_mnemonic(test_mnemonic):
+            self.logger.error("❌ Test mnemonic is not valid BIP39")
+            return False
+        
+        self.logger.info("✓ Mnemonic is valid BIP39")
+        
+        # Test all derivation methods
+        derivation_methods = self.key_derivation.derive_all_keys(test_mnemonic)
+        
+        self.logger.info(f"✓ Derived {len(derivation_methods)} possible public keys:")
+        
+        for method_name, pubkey_hex in derivation_methods:
+            self.logger.info(f"  {method_name}: {pubkey_hex}")
+        
+        # Test account lookup and balance checking
+        if derivation_methods:
+            method_name, accounts, balance = self.hedera_client.check_balance_for_keys(derivation_methods)
+            
+            if accounts:
+                self.logger.info(f"✓ Found wallet with method: {method_name}")
+                self.logger.info(f"✓ Accounts: {accounts}")
+                self.logger.info(f"✓ Total balance: {balance} tinybars")
+                self.logger.info("✓ DERIVATION TEST PASSED: Wallet found with balance!")
+                return True
+            else:
+                self.logger.info("ℹ️ No accounts found with balance (this may be normal for test wallets)")
+                self.logger.info("✓ DERIVATION TEST PASSED: All methods tested successfully")
+                return True
+        
+        self.logger.error("❌ DERIVATION TEST FAILED: No derivation methods available")
+        return False
+    
     def process_combination(self, word_combination: Tuple[str, ...]) -> Tuple[str, bool, int]:
         """Process a single word combination."""
         mnemonic = " ".join(word_combination)

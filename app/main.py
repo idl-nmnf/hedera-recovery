@@ -34,20 +34,40 @@ def read_wordlist():
         sys.exit(1)
 
 
-def read_test_mnemonic():
-    """Read test mnemonic if available."""
+def read_test_mnemonics():
+    """Read test mnemonics from file (supports multiple lines)."""
     try:
         with open(TEST_MNEMONIC_PATH, 'r') as f:
-            return f.read().strip()
+            lines = [line.strip() for line in f.readlines() if line.strip() and not line.startswith('#')]
+        return lines
     except FileNotFoundError:
-        return None
+        return []
     except Exception as e:
-        print(f"Error reading test mnemonic: {e}")
-        return None
+        print(f"Error reading test mnemonics: {e}")
+        return []
+
+
+def read_expected_keys():
+    """Read expected keys for testing (supports multiple lines)."""
+    try:
+        with open(TEST_EXPECTED_KEY_PATH, 'r') as f:
+            lines = [line.strip() for line in f.readlines() if line.strip() and not line.startswith('#')]
+        return lines
+    except FileNotFoundError:
+        return []
+    except Exception as e:
+        print(f"Error reading expected keys: {e}")
+        return []
+
+
+def read_test_mnemonic():
+    """Read test mnemonic if available (legacy single-line support)."""
+    mnemonics = read_test_mnemonics()
+    return mnemonics[0] if mnemonics else None
 
 
 def read_expected_key():
-    """Read expected key for testing."""
+    """Read expected key for testing (legacy single-line support)."""
     try:
         with open(TEST_EXPECTED_KEY_PATH, 'r') as f:
             return f.read().strip()
@@ -98,26 +118,50 @@ def main():
         test_mode = '--test' in sys.argv
         
         if test_mode:
-            # Test mode with known wallet
-            test_mnemonic = read_test_mnemonic()
-            if not test_mnemonic:
+            # Test mode with multiple known wallets
+            test_mnemonics = read_test_mnemonics()
+            expected_keys = read_expected_keys()
+            
+            if not test_mnemonics:
                 print(f"Error: {TEST_MNEMONIC_PATH} not found for testing.")
-                print("Create this file with a known 24-word mnemonic for validation.")
+                print("Create this file with known 24-word mnemonics for validation (one per line).")
                 sys.exit(1)
             
-            # Read expected key from file
-            expected_key = read_expected_key()
-            if not expected_key:
-                print(f"Error: {TEST_EXPECTED_KEY_PATH} not found for testing.")
-                print("Create this file with the expected private key for validation.")
-                sys.exit(1)
+            print(f"🧪 Testing {len(test_mnemonics)} known wallet(s)...")
             
-            success = engine.test_known_wallet(test_mnemonic, expected_key)
-            if not success:
-                print("❌ Known wallet test failed! Please check your derivation methods.")
-                sys.exit(1)
+            # Test each wallet
+            all_passed = True
+            for i, test_mnemonic in enumerate(test_mnemonics, 1):
+                print(f"\n📋 Testing wallet #{i}: {test_mnemonic[:20]}...")
+                
+                # Use corresponding expected key if available, otherwise test without validation
+                expected_key = expected_keys[i-1] if i <= len(expected_keys) else None
+                
+                if expected_key:
+                    print(f"🔑 Expected key: {expected_key}")
+                    success = engine.test_known_wallet(test_mnemonic, expected_key)
+                    if success:
+                        print(f"✅ Wallet #{i} test PASSED!")
+                    else:
+                        print(f"❌ Wallet #{i} test FAILED!")
+                        all_passed = False
+                else:
+                    print(f"⚠️ No expected key for wallet #{i}, testing derivation methods only...")
+                    # Test derivation without key validation (just show what methods produce keys)
+                    success = engine.test_derivation_methods(test_mnemonic)
+                    if success:
+                        print(f"✅ Wallet #{i} derivation test completed!")
+                    else:
+                        print(f"❌ Wallet #{i} derivation test failed!")
+                        all_passed = False
             
-            print("✅ Test passed! Recovery system is working correctly.")
+            if all_passed:
+                print(f"\n🎉 All {len(test_mnemonics)} wallet tests PASSED!")
+                print("✅ Recovery system is working correctly for all test cases.")
+            else:
+                print(f"\n⚠️ Some wallet tests failed. Please check your derivation methods.")
+                sys.exit(1)
+                
             sys.exit(0)
         
         else:

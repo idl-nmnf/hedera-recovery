@@ -31,6 +31,13 @@ class PatternGenerator:
         yield from self._column_based_patterns()
         yield from self._chunk_reversal_patterns()
         
+        # NEW: Ledger card writing patterns
+        yield from self._ledger_card_patterns()
+        yield from self._two_column_patterns()
+        yield from self._card_writing_sequence_patterns()
+        yield from self._ledger_display_order_patterns()
+        yield from self._card_position_swap_patterns()
+        
         # Advanced mathematical patterns
         yield from self._fibonacci_patterns()
         yield from self._prime_patterns()
@@ -548,6 +555,208 @@ class PatternGenerator:
         if self.word_count >= self.length:
             for combo in itertools.combinations(self.words, self.length):
                 yield combo
+
+    # ============================================================================
+    # LEDGER CARD WRITING PATTERNS
+    # ============================================================================
+    
+    def _ledger_card_patterns(self) -> Generator[Tuple[str, ...], None, None]:
+        """Patterns based on how someone writes Ledger words on a 2-column card."""
+        if self.word_count >= self.length:
+            # Pattern 1: Write in order, but swap first and last
+            pattern = self.words[:self.length]
+            if len(pattern) >= 2:
+                swapped = pattern.copy()
+                swapped[0], swapped[-1] = swapped[-1], swapped[0]
+                yield tuple(swapped)
+            
+            # Pattern 2: Write odd positions first, then even positions
+            odds = [word for i, word in enumerate(self.words[:self.length]) if i % 2 == 0]
+            evens = [word for i, word in enumerate(self.words[:self.length]) if i % 2 == 1]
+            if len(odds) + len(evens) == self.length:
+                yield tuple(odds + evens)
+                yield tuple(evens + odds)
+    
+    def _two_column_patterns(self) -> Generator[Tuple[str, ...], None, None]:
+        """Patterns for writing words in two columns (1-12, 13-24)."""
+        if self.word_count >= self.length:
+            # Column writing patterns
+            half = self.length // 2
+            
+            # Pattern 1: Left column first (1-12), then right column (13-24)
+            left_col = self.words[:half]
+            right_col = self.words[half:self.length] if len(self.words) >= self.length else self.words[half:]
+            if len(left_col) + len(right_col) == self.length:
+                yield tuple(left_col + right_col)
+                
+            # Pattern 2: Right column first, then left column
+            if len(left_col) + len(right_col) == self.length:
+                yield tuple(right_col + left_col)
+                
+            # Pattern 3: Interleave columns (1, 13, 2, 14, 3, 15...)
+            interleaved = []
+            for i in range(half):
+                if i < len(left_col):
+                    interleaved.append(left_col[i])
+                if i < len(right_col):
+                    interleaved.append(right_col[i])
+            if len(interleaved) >= self.length:
+                yield tuple(interleaved[:self.length])
+                
+            # Pattern 4: Reverse interleave (13, 1, 14, 2, 15, 3...)
+            reverse_interleaved = []
+            for i in range(half):
+                if i < len(right_col):
+                    reverse_interleaved.append(right_col[i])
+                if i < len(left_col):
+                    reverse_interleaved.append(left_col[i])
+            if len(reverse_interleaved) >= self.length:
+                yield tuple(reverse_interleaved[:self.length])
+    
+    def _card_writing_sequence_patterns(self) -> Generator[Tuple[str, ...], None, None]:
+        """Patterns based on the sequence of writing words as they appear on Ledger."""
+        if self.word_count >= self.length:
+            # Pattern 1: Write words in groups of 4 (quarters)
+            quarters = []
+            quarter_size = self.length // 4
+            for q in range(4):
+                start = q * quarter_size
+                end = start + quarter_size if q < 3 else self.length
+                if start < len(self.words):
+                    quarter = self.words[start:min(end, len(self.words))]
+                    quarters.append(quarter)
+            
+            # Different quarter orderings
+            if len(quarters) == 4:
+                # Normal order: Q1, Q2, Q3, Q4
+                yield tuple([word for quarter in quarters for word in quarter])
+                # Reverse order: Q4, Q3, Q2, Q1
+                yield tuple([word for quarter in reversed(quarters) for word in quarter])
+                # Alternate: Q1, Q3, Q2, Q4
+                alt_quarters = [quarters[0], quarters[2], quarters[1], quarters[3]]
+                yield tuple([word for quarter in alt_quarters for word in quarter])
+                # Zigzag: Q1, Q4, Q2, Q3
+                zigzag_quarters = [quarters[0], quarters[3], quarters[1], quarters[2]]
+                yield tuple([word for quarter in zigzag_quarters for word in quarter])
+            
+            # Pattern 2: Write words in groups of 6 (Ledger often shows 6 words at a time)
+            if self.length == 24:
+                groups = []
+                for g in range(4):  # 4 groups of 6
+                    start = g * 6
+                    end = start + 6
+                    if start < len(self.words):
+                        group = self.words[start:min(end, len(self.words))]
+                        groups.append(group)
+                
+                if len(groups) == 4:
+                    # Different group orderings
+                    yield tuple([word for group in groups for word in group])
+                    yield tuple([word for group in reversed(groups) for word in group])
+    
+    def _ledger_display_order_patterns(self) -> Generator[Tuple[str, ...], None, None]:
+        """Patterns based on how Ledger displays words (often in chunks)."""
+        if self.word_count >= self.length:
+            # Pattern 1: Ledger shows words 1-8, 9-16, 17-24 in separate screens
+            if self.length == 24:
+                screen1 = self.words[0:8] if len(self.words) > 8 else self.words[0:len(self.words)]
+                screen2 = self.words[8:16] if len(self.words) > 16 else self.words[8:len(self.words)]
+                screen3 = self.words[16:24] if len(self.words) > 24 else self.words[16:len(self.words)]
+                
+                # Different screen orderings
+                if len(screen1) + len(screen2) + len(screen3) == self.length:
+                    # Normal: Screen1, Screen2, Screen3
+                    yield tuple(screen1 + screen2 + screen3)
+                    # Reverse: Screen3, Screen2, Screen1
+                    yield tuple(screen3 + screen2 + screen1)
+                    # Alternate: Screen1, Screen3, Screen2
+                    yield tuple(screen1 + screen3 + screen2)
+                    # Mixed: Screen2, Screen1, Screen3
+                    yield tuple(screen2 + screen1 + screen3)
+            
+            # Pattern 2: Words written in a spiral on the card
+            # Simulate writing positions 1,2,3,4 then 12,11,10,9 then 5,6,7,8 etc.
+            positions = list(range(self.length))
+            spiral_order = []
+            
+            # Create spiral writing pattern
+            if self.length == 24:
+                # Top row: 1,2,3,4,5,6
+                spiral_order.extend([0,1,2,3,4,5])
+                # Right column down: 12,18,24
+                spiral_order.extend([11,17,23])
+                # Bottom row left: 23,22,21,20,19
+                spiral_order.extend([22,21,20,19,18])
+                # Left column up: 13,7
+                spiral_order.extend([12,6])
+                # Inner spiral continues...
+                spiral_order.extend([7,8,9,10,16,15,14,13])
+                
+                # Apply spiral order if we have enough words
+                if len(spiral_order) >= self.length and len(self.words) >= self.length:
+                    spiral_pattern = []
+                    for pos in spiral_order[:self.length]:
+                        if pos < len(self.words):
+                            spiral_pattern.append(self.words[pos])
+                    if len(spiral_pattern) == self.length:
+                        yield tuple(spiral_pattern)
+    
+    def _card_position_swap_patterns(self) -> Generator[Tuple[str, ...], None, None]:
+        """Patterns based on common position swaps when writing on card."""
+        if self.word_count >= self.length:
+            pattern = self.words[:self.length]
+            
+            # Pattern 1: Swap adjacent pairs (1↔2, 3↔4, 5↔6, etc.)
+            pair_swapped = pattern.copy()
+            for i in range(0, len(pair_swapped) - 1, 2):
+                pair_swapped[i], pair_swapped[i + 1] = pair_swapped[i + 1], pair_swapped[i]
+            yield tuple(pair_swapped)
+            
+            # Pattern 2: Swap positions 1↔13, 2↔14, 3↔15, etc. (column swaps)
+            if self.length == 24:
+                col_swapped = pattern.copy()
+                for i in range(12):
+                    if i + 12 < len(col_swapped):
+                        col_swapped[i], col_swapped[i + 12] = col_swapped[i + 12], col_swapped[i]
+                yield tuple(col_swapped)
+            
+            # Pattern 3: Swap first/last of each half
+            half = self.length // 2
+            half_swapped = pattern.copy()
+            if len(half_swapped) >= 4:
+                # Swap 1↔12 and 13↔24
+                half_swapped[0], half_swapped[half - 1] = half_swapped[half - 1], half_swapped[0]
+                half_swapped[half], half_swapped[-1] = half_swapped[-1], half_swapped[half]
+                yield tuple(half_swapped)
+            
+            # Pattern 4: Reverse each column independently
+            if self.length == 24:
+                rev_cols = pattern.copy()
+                # Reverse positions 1-12
+                rev_cols[0:12] = reversed(rev_cols[0:12])
+                # Reverse positions 13-24
+                rev_cols[12:24] = reversed(rev_cols[12:24])
+                yield tuple(rev_cols)
+            
+            # Pattern 5: Diagonal writing pattern (1,14,3,16,5,18,7,20,9,22,11,24,2,13,4,15,6,17,8,19,10,21,12,23)
+            if self.length == 24:
+                diagonal = []
+                # First diagonal: odd positions from left column + even positions from right column
+                for i in range(12):
+                    if i % 2 == 0 and i < len(pattern):  # 1,3,5,7,9,11 (positions 0,2,4,6,8,10)
+                        diagonal.append(pattern[i])
+                    if i % 2 == 1 and i + 12 < len(pattern):  # 14,16,18,20,22,24 (positions 13,15,17,19,21,23)
+                        diagonal.append(pattern[i + 12])
+                
+                # Second diagonal: even positions from left + odd positions from right
+                for i in range(12):
+                    if i % 2 == 1 and i < len(pattern):  # 2,4,6,8,10,12 (positions 1,3,5,7,9,11)
+                        diagonal.append(pattern[i])
+                    if i % 2 == 0 and i + 12 < len(pattern):  # 13,15,17,19,21,23 (positions 12,14,16,18,20,22)
+                        diagonal.append(pattern[i + 12])
+                
+                if len(diagonal) == self.length:
+                    yield tuple(diagonal)
 
 
 def generate_combinations(words: List[str], length: int = 24) -> Generator[Tuple[str, ...], None, None]:
