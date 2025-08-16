@@ -22,23 +22,24 @@ class PatternGenerator:
         yield from self._interleaved_patterns()
         yield from self._chunk_patterns()
         
-        # NEW: Advanced geometric patterns
+        # Advanced geometric patterns
         yield from self._zigzag_patterns()
         yield from self._spiral_patterns()
         yield from self._mirror_patterns()
         yield from self._half_reverse_patterns()
         yield from self._quarter_rotation_patterns()
+        yield from self._column_based_patterns()
+        yield from self._chunk_reversal_patterns()
         
-        # NEW: Advanced mathematical patterns
+        # Advanced mathematical patterns
         yield from self._fibonacci_patterns()
         yield from self._prime_patterns()
         yield from self._golden_ratio_patterns()
         yield from self._modular_arithmetic_patterns()
         yield from self._palindrome_patterns()
         
-        # NEW: User behavior patterns
+        # User behavior patterns
         yield from self._keyboard_patterns()
-        yield from self._alphabetical_patterns()
         yield from self._frequency_patterns()
         yield from self._length_patterns()
         
@@ -122,7 +123,7 @@ class PatternGenerator:
             yield tuple(prime_pattern)
 
     # =============================================================================
-    # NEW ADVANCED GEOMETRIC PATTERNS
+    # ADVANCED GEOMETRIC PATTERNS
     # =============================================================================
     
     def _zigzag_patterns(self) -> Generator[Tuple[str, ...], None, None]:
@@ -242,7 +243,7 @@ class PatternGenerator:
                     yield tuple(rotated)
 
     # =============================================================================
-    # NEW ADVANCED MATHEMATICAL PATTERNS  
+    # ADVANCED MATHEMATICAL PATTERNS  
     # =============================================================================
     
     def _golden_ratio_patterns(self) -> Generator[Tuple[str, ...], None, None]:
@@ -283,7 +284,7 @@ class PatternGenerator:
                 yield tuple(palindrome)
 
     # =============================================================================
-    # NEW USER BEHAVIOR PATTERNS
+    # USER BEHAVIOR PATTERNS
     # =============================================================================
     
     def _keyboard_patterns(self) -> Generator[Tuple[str, ...], None, None]:
@@ -300,110 +301,172 @@ class PatternGenerator:
                 pattern.append(self.words[index])
             yield tuple(pattern)
     
-    def _alphabetical_patterns(self) -> Generator[Tuple[str, ...], None, None]:
-        """Comprehensive alphabetical sorting patterns."""
+    # =============================================================================
+    # COLUMN-BASED PATTERNS (2 columns, 4 columns, etc.)
+    # =============================================================================
+    
+    def _column_based_patterns(self) -> Generator[Tuple[str, ...], None, None]:
+        """Column-based word organization patterns."""
         if self.word_count >= self.length:
-            # === BASIC ALPHABETICAL PATTERNS ===
-            sorted_words = sorted(self.words)
+            words_subset = self.words[:self.length]
             
-            # 1. First N alphabetically (A-Z order)
-            yield tuple(sorted_words[:self.length])
+            # === TWO COLUMN PATTERNS (12 + 12) ===
+            if self.length == 24:
+                col1 = words_subset[:12]  # First 12 words
+                col2 = words_subset[12:]  # Last 12 words
+                
+                # 1. Interleave columns: 1st from col1, 1st from col2, 2nd from col1, 2nd from col2...
+                interleaved = []
+                for i in range(12):
+                    interleaved.append(col1[i])
+                    interleaved.append(col2[i])
+                yield tuple(interleaved)
+                
+                # 2. Reverse interleave: 1st from col2, 1st from col1, 2nd from col2, 2nd from col1...
+                reverse_interleaved = []
+                for i in range(12):
+                    reverse_interleaved.append(col2[i])
+                    reverse_interleaved.append(col1[i])
+                yield tuple(reverse_interleaved)
+                
+                # 3. Column 1 + Reversed Column 2
+                yield tuple(col1 + list(reversed(col2)))
+                
+                # 4. Reversed Column 1 + Column 2
+                yield tuple(list(reversed(col1)) + col2)
+                
+                # 5. Both columns reversed
+                yield tuple(list(reversed(col1)) + list(reversed(col2)))
+                
+                # 6. Zigzag between columns (1st col1, last col2, 2nd col1, 2nd-last col2...)
+                col_zigzag = []
+                for i in range(12):
+                    col_zigzag.append(col1[i])
+                    col_zigzag.append(col2[11-i])  # Reverse index from col2
+                yield tuple(col_zigzag)
+                
+                # 7. Reverse zigzag between columns
+                rev_col_zigzag = []
+                for i in range(12):
+                    rev_col_zigzag.append(col2[i])
+                    rev_col_zigzag.append(col1[11-i])
+                yield tuple(rev_col_zigzag)
             
-            # 2. Last N alphabetically (Z-A end of alphabet)
-            yield tuple(sorted_words[-self.length:])
+            # === FOUR COLUMN PATTERNS (6 + 6 + 6 + 6) ===
+            if self.length >= 24:
+                quarter = self.length // 4
+                col1 = words_subset[:quarter]
+                col2 = words_subset[quarter:quarter*2]
+                col3 = words_subset[quarter*2:quarter*3]
+                col4 = words_subset[quarter*3:quarter*4]
+                
+                # 8. Round-robin through 4 columns
+                four_col_pattern = []
+                for i in range(quarter):
+                    four_col_pattern.extend([col1[i], col2[i], col3[i], col4[i]])
+                yield tuple(four_col_pattern)
+                
+                # 9. Reverse round-robin
+                four_col_reverse = []
+                for i in range(quarter):
+                    four_col_reverse.extend([col4[i], col3[i], col2[i], col1[i]])
+                yield tuple(four_col_reverse)
+                
+                # 10. Column pairs: Col1+Col3, then Col2+Col4
+                col_pairs = col1 + col3 + col2 + col4
+                yield tuple(col_pairs)
+                
+                # 11. Diagonal pattern: Col1+Col4, then Col2+Col3
+                diagonal = col1 + col4 + col2 + col3
+                yield tuple(diagonal)
+    
+    def _chunk_reversal_patterns(self) -> Generator[Tuple[str, ...], None, None]:
+        """Chunk-based reversal patterns as you suggested."""
+        if self.word_count >= self.length:
+            words_subset = self.words[:self.length]
             
-            # 3. REVERSE alphabetical order (Z-A)
-            reverse_sorted = sorted(self.words, reverse=True)
-            yield tuple(reverse_sorted[:self.length])
+            # === 6-WORD CHUNK PATTERNS ===
+            if self.length == 24:
+                chunk_size = 6
+                chunks = [words_subset[i:i+chunk_size] for i in range(0, self.length, chunk_size)]
+                
+                # 1. First 6 straight, next 6 reversed, next 6 straight, last 6 reversed
+                pattern1 = []
+                for i, chunk in enumerate(chunks):
+                    if i % 2 == 0:  # Even chunks (0, 2) - straight
+                        pattern1.extend(chunk)
+                    else:  # Odd chunks (1, 3) - reversed
+                        pattern1.extend(reversed(chunk))
+                yield tuple(pattern1)
+                
+                # 2. First 6 reversed, next 6 straight, next 6 reversed, last 6 straight
+                pattern2 = []
+                for i, chunk in enumerate(chunks):
+                    if i % 2 == 0:  # Even chunks - reversed
+                        pattern2.extend(reversed(chunk))
+                    else:  # Odd chunks - straight
+                        pattern2.extend(chunk)
+                yield tuple(pattern2)
+                
+                # 3. All chunks reversed except first
+                pattern3 = []
+                for i, chunk in enumerate(chunks):
+                    if i == 0:
+                        pattern3.extend(chunk)  # First straight
+                    else:
+                        pattern3.extend(reversed(chunk))  # Rest reversed
+                yield tuple(pattern3)
+                
+                # 4. All chunks reversed except last
+                pattern4 = []
+                for i, chunk in enumerate(chunks):
+                    if i == len(chunks) - 1:
+                        pattern4.extend(chunk)  # Last straight
+                    else:
+                        pattern4.extend(reversed(chunk))  # Rest reversed
+                yield tuple(pattern4)
             
-            # 4. Every nth alphabetically (distributed sampling)
-            if len(sorted_words) > self.length:
-                step = len(sorted_words) // self.length
-                pattern = [sorted_words[i * step] for i in range(self.length)]
-                yield tuple(pattern)
+            # === 4-WORD CHUNK PATTERNS ===
+            chunk_size = 4
+            if self.length % chunk_size == 0:
+                chunks = [words_subset[i:i+chunk_size] for i in range(0, self.length, chunk_size)]
+                
+                # 5. Alternating 4-word chunks (straight, reverse, straight, reverse...)
+                alt_pattern = []
+                for i, chunk in enumerate(chunks):
+                    if i % 2 == 0:
+                        alt_pattern.extend(chunk)
+                    else:
+                        alt_pattern.extend(reversed(chunk))
+                yield tuple(alt_pattern)
             
-            # === ADVANCED ALPHABETICAL PATTERNS ===
+            # === 8-WORD CHUNK PATTERNS ===
+            if self.length >= 16:
+                chunk_size = 8
+                chunks = [words_subset[i:i+chunk_size] for i in range(0, min(self.length, 16), chunk_size)]
+                
+                # 6. First 8 straight, last 8 reversed
+                if len(chunks) >= 2:
+                    pattern = list(chunks[0]) + list(reversed(chunks[1]))
+                    # Fill remaining if 24 words
+                    if self.length > 16:
+                        remaining = words_subset[16:]
+                        pattern.extend(remaining)
+                    yield tuple(pattern[:self.length])
             
-            # 5. Alphabetical zigzag (A, Z, B, Y, C, X, ...)
-            left_idx, right_idx = 0, len(sorted_words) - 1
-            alpha_zigzag = []
-            for i in range(min(self.length, len(sorted_words))):
-                if i % 2 == 0:
-                    alpha_zigzag.append(sorted_words[left_idx])
-                    left_idx += 1
-                else:
-                    alpha_zigzag.append(sorted_words[right_idx])
-                    right_idx -= 1
-                if left_idx > right_idx:
-                    break
-            if len(alpha_zigzag) == self.length:
-                yield tuple(alpha_zigzag)
-            
-            # 6. Middle-out alphabetical (start from middle of alphabet)
-            if len(sorted_words) >= self.length:
-                mid = len(sorted_words) // 2
-                middle_out = []
-                for i in range(self.length // 2):
-                    if mid + i < len(sorted_words):
-                        middle_out.append(sorted_words[mid + i])
-                    if mid - i - 1 >= 0 and len(middle_out) < self.length:
-                        middle_out.append(sorted_words[mid - i - 1])
-                if len(middle_out) >= self.length:
-                    yield tuple(middle_out[:self.length])
-            
-            # === ALPHABETICAL BY WORD CHARACTERISTICS ===
-            
-            # 7. Sort by first letter, then by length
-            by_first_then_length = sorted(self.words, key=lambda x: (x[0], len(x)))
-            yield tuple(by_first_then_length[:self.length])
-            
-            # 8. Sort by last letter
-            by_last_letter = sorted(self.words, key=lambda x: x[-1])
-            yield tuple(by_last_letter[:self.length])
-            
-            # 9. Reverse sort by last letter
-            by_last_letter_rev = sorted(self.words, key=lambda x: x[-1], reverse=True)
-            yield tuple(by_last_letter_rev[:self.length])
-            
-            # 10. Sort by middle letter (for words long enough)
-            def get_middle_char(word):
-                return word[len(word) // 2] if len(word) > 0 else 'z'
-            
-            by_middle_letter = sorted(self.words, key=get_middle_char)
-            yield tuple(by_middle_letter[:self.length])
-            
-            # === VOWEL/CONSONANT ALPHABETICAL PATTERNS ===
-            
-            # 11. Vowels first alphabetically, then consonants
-            vowels = [w for w in sorted_words if w[0].lower() in 'aeiou']
-            consonants = [w for w in sorted_words if w[0].lower() not in 'aeiou']
-            vowel_consonant_pattern = (vowels + consonants)[:self.length]
-            if len(vowel_consonant_pattern) == self.length:
-                yield tuple(vowel_consonant_pattern)
-            
-            # 12. Consonants first, then vowels
-            consonant_vowel_pattern = (consonants + vowels)[:self.length]
-            if len(consonant_vowel_pattern) == self.length:
-                yield tuple(consonant_vowel_pattern)
-            
-            # === ALTERNATING ALPHABETICAL PATTERNS ===
-            
-            # 13. Alternating A-Z and Z-A
-            alternating_alpha = []
-            for i in range(self.length):
-                if i % 2 == 0 and i < len(sorted_words):
-                    alternating_alpha.append(sorted_words[i])
-                elif len(reverse_sorted) > i // 2:
-                    alternating_alpha.append(reverse_sorted[i // 2])
-            if len(alternating_alpha) == self.length:
-                yield tuple(alternating_alpha)
-            
-            # 14. Alphabetical by word position (1st, 3rd, 5th... then 2nd, 4th, 6th...)
-            if len(sorted_words) >= self.length:
-                odd_positions = [sorted_words[i] for i in range(0, len(sorted_words), 2)]
-                even_positions = [sorted_words[i] for i in range(1, len(sorted_words), 2)]
-                position_pattern = (odd_positions + even_positions)[:self.length]
-                yield tuple(position_pattern)
+            # === 3-WORD CHUNK PATTERNS ===
+            chunk_size = 3
+            if self.length % chunk_size == 0:
+                chunks = [words_subset[i:i+chunk_size] for i in range(0, self.length, chunk_size)]
+                
+                # 7. Every 3rd chunk reversed
+                three_pattern = []
+                for i, chunk in enumerate(chunks):
+                    if (i + 1) % 3 == 0:  # Every 3rd chunk
+                        three_pattern.extend(reversed(chunk))
+                    else:
+                        three_pattern.extend(chunk)
+                yield tuple(three_pattern)
     
     def _frequency_patterns(self) -> Generator[Tuple[str, ...], None, None]:
         """Patterns based on word length or characteristics."""
