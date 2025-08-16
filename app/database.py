@@ -36,6 +36,18 @@ class Database:
             )
         ''')
         
+        # Create index for fast mnemonic lookups
+        cur.execute('''
+            CREATE INDEX IF NOT EXISTS idx_combinations_mnemonic 
+            ON combinations(mnemonic)
+        ''')
+        
+        # Create index for stats queries
+        cur.execute('''
+            CREATE INDEX IF NOT EXISTS idx_combinations_checked_balance 
+            ON combinations(checked, balance) WHERE checked = TRUE
+        ''')
+        
         # Add new columns if they don't exist
         try:
             cur.execute('ALTER TABLE combinations ADD COLUMN IF NOT EXISTS method_used TEXT')
